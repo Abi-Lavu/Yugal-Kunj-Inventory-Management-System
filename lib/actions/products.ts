@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "../auth";
 import { prisma } from "../prisma";
@@ -14,12 +15,15 @@ const ProductSchema = z.object({
 });
 
 export async function deleteProduct(formData: FormData) {
-  const user = await getCurrentUser();
+  await getCurrentUser();
   const id = String(formData.get("id") || "");
 
   await prisma.product.deleteMany({
-    where: { id: id, userId: user.id },
+    where: { id },
   });
+
+  revalidatePath("/inventory");
+  revalidatePath("/dashboard");
 }
 
 export async function createProduct(formData: FormData) {
@@ -34,15 +38,40 @@ export async function createProduct(formData: FormData) {
   });
 
   if (!parsed.success) {
-    throw new Error("Validation failed");
+    redirect("/add-product?error=invalid");
+  }
+
+  const { name, sku } = parsed.data;
+
+  // No duplicate items: reject a name that already exists (case-insensitive).
+  const duplicateName = await prisma.product.findFirst({
+    where: { name: { equals: name, mode: "insensitive" } },
+    select: { id: true },
+  });
+  if (duplicateName) {
+    redirect("/add-product?error=duplicate-name");
+  }
+
+  // SKUs are unique too — block a duplicate before hitting the DB constraint.
+  if (sku) {
+    const duplicateSku = await prisma.product.findFirst({
+      where: { sku: { equals: sku, mode: "insensitive" } },
+      select: { id: true },
+    });
+    if (duplicateSku) {
+      redirect("/add-product?error=duplicate-sku");
+    }
   }
 
   try {
     await prisma.product.create({
       data: { ...parsed.data, userId: user.id },
     });
-    redirect("/inventory");
-  } catch (error) {
-    throw new Error("Failed to create product.");
+  } catch {
+    redirect("/add-product?error=failed");
   }
+
+  revalidatePath("/inventory");
+  revalidatePath("/dashboard");
+  redirect("/inventory");
 }

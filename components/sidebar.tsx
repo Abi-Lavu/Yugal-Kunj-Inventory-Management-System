@@ -1,5 +1,6 @@
-import { UserButton } from "@stackframe/stack";
-import { BarChart3, Package, Plus, Settings } from "lucide-react";
+import UserMenu from "@/components/auth/user-menu";
+import { cn } from "@/lib/utils";
+import { BarChart3, Boxes, Package, Plus, Settings } from "lucide-react";
 import Link from "next/link";
 
 export default function Sidebar({
@@ -13,44 +14,63 @@ export default function Sidebar({
     { name: "Add Product", href: "/add-product", icon: Plus },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
+
   return (
-    <div className="fixed left-0 top-0 bg-gray-900 text-white w-64 min-h-screen p-6 z-10">
-      <div className="mb-8">
-        <div className="flex items-center space-x-2 mb-4">
-          <BarChart3 className="w-7 h-7" />
-          <span className="text-lg font-semibold">Inventory App</span>
+    <aside className="fixed left-0 top-0 z-20 flex h-screen w-64 flex-col bg-sidebar text-sidebar-foreground animate-in slide-in-from-left-6 fade-in duration-500">
+      {/* ambient violet glow */}
+      <div className="pointer-events-none absolute -top-20 left-1/2 h-44 w-44 -translate-x-1/2 rounded-full bg-violet-600/20 blur-3xl" />
+
+      {/* brand */}
+      <div className="relative flex items-center gap-3 px-6 py-6">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 shadow-lg shadow-violet-500/30 transition-transform duration-300 hover:scale-105 hover:rotate-3">
+          <Boxes className="h-5 w-5 text-white" />
+        </div>
+        <div className="flex flex-col leading-tight">
+          <span className="text-sm font-semibold">Inventory</span>
+          <span className="text-xs text-sidebar-foreground/50">Management</span>
         </div>
       </div>
 
-      <nav className="space-y-1">
-        <div className="text-sm font-semibold text-gray-400 uppercase">
-          Iventory
-        </div>
-        {navigation.map((item, key) => {
-          const IconComponent = item.icon;
+      {/* nav */}
+      <nav className="relative flex-1 space-y-1 px-3 py-2">
+        <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-sidebar-foreground/40">
+          Menu
+        </p>
+        {navigation.map((item, i) => {
+          const Icon = item.icon;
           const isActive = currentPath === item.href;
           return (
             <Link
+              key={item.href}
               href={item.href}
-              key={key}
-              className={`flex items-center space-x-3 py-2 px-3 rounded-lg ${
+              style={{ animationDelay: `${i * 70 + 120}ms` }}
+              className={cn(
+                "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium animate-in fade-in slide-in-from-left-4 duration-500",
+                "transition-all duration-200",
                 isActive
-                  ? "bg-purple-100 text-gray-800"
-                  : "hover:bg-gray-800 text-gray-300"
-              }`}
+                  ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-600/25"
+                  : "text-sidebar-foreground/70 hover:translate-x-0.5 hover:bg-white/5 hover:text-white"
+              )}
             >
-              <IconComponent className="w-5 h-5" />
-              <span className="text-sm">{item.name}</span>
+              {isActive && (
+                <span className="absolute inset-y-2 left-0 w-1 rounded-full bg-white/80" />
+              )}
+              <Icon
+                className={cn(
+                  "h-[18px] w-[18px] transition-transform duration-200",
+                  !isActive && "group-hover:scale-110"
+                )}
+              />
+              <span>{item.name}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="absolute bottom-0 left-0 right-0 p-6 borter-t border-gray-700">
-        <div className="flex items-center justify-between">
-          <UserButton showUserInfo />
-        </div>
+      {/* user (auth) */}
+      <div className="relative border-t border-white/10 p-4">
+        <UserMenu />
       </div>
-    </div>
+    </aside>
   );
 }

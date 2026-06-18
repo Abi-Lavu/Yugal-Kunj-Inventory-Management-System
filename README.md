@@ -1,4 +1,4 @@
-# Build a Full-Stack Inventory Management System with Next.js & Stack Auth
+# Build a Full-Stack Inventory Management System with Next.js & Better Auth
 
 <div align="center">
 <br />
@@ -12,7 +12,7 @@
 <img src="https://img.shields.io/badge/-TailwindCSS-06B6D4?style=for-the-badge&logo=tailwindcss" alt="Tailwind CSS" />
 <img src="https://img.shields.io/badge/-Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white" alt="Prisma" />
 <img src="https://img.shields.io/badge/-PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
-<img src="https://img.shields.io/badge/-Stack Auth-FF6B6B?style=for-the-badge&logo=stackauth&logoColor=white" alt="Stack Auth" />
+<img src="https://img.shields.io/badge/-Better Auth-111827?style=for-the-badge&logoColor=white" alt="Better Auth" />
 <img src="https://img.shields.io/badge/-Lucide Icons-FD4D4D?style=for-the-badge&logo=lucide" alt="Lucide Icons" />
 </div>
 <h3 align="center">Create a Complete Inventory Management System with Authentication, Dashboard Analytics, and CRUD Operations</h3>
@@ -36,7 +36,7 @@ Follow the full video tutorial on <a href="https://youtu.be/YOUR_VIDEO_ID" targe
 
 ## 🚀 Introduction
 
-In this comprehensive tutorial, you'll learn how to build a complete **inventory management system** using **Next.js 15**, **Stack Auth**, **Prisma**, and **PostgreSQL**. From user authentication to dashboard analytics, product management, and real-time inventory tracking—this video walks you through every step of building a production-ready full-stack application.
+In this comprehensive tutorial, you'll learn how to build a complete **inventory management system** using **Next.js 15**, **Better Auth**, **Prisma**, and **PostgreSQL**. From user authentication to dashboard analytics, product management, and real-time inventory tracking—this video walks you through every step of building a production-ready full-stack application.
 
 Perfect for developers looking to master modern web development, learn full-stack architecture, or build their own business management tools.
 
@@ -49,7 +49,7 @@ Perfect for developers looking to master modern web development, learn full-stac
 - **Next.js 15** – React framework with App Router and Server Components
 - **React 19** – Component-based UI development with latest features
 - **TailwindCSS** – Utility-first CSS for modern styling
-- **Stack Auth** – Modern authentication solution (replaces NextAuth.js)
+- **Better Auth** – Self-hosted TypeScript authentication with email/password sessions
 - **Prisma** – Type-safe database ORM with migrations
 - **PostgreSQL** – Robust relational database
 - **Lucide Icons** – Clean and beautiful icon pack
@@ -61,7 +61,7 @@ Perfect for developers looking to master modern web development, learn full-stac
 
 ## ⚡️ Features
 
-- 🔐 **Modern Authentication** - Secure user registration and login with Stack Auth
+- 🔐 **Modern Authentication** - Secure user registration and login with Better Auth
 - 📊 **Dashboard Analytics** - Real-time metrics, charts, and inventory insights
 - 📦 **Product Management** - Complete CRUD operations for inventory items
 - 🔍 **Search & Filtering** - Find products quickly with search functionality
@@ -98,9 +98,8 @@ npm install
 
 ```env
 DATABASE_URL="postgresql://username:password@localhost:5432/inventory_db"
-NEXT_PUBLIC_STACK_PROJECT_ID="your_stack_project_id"
-NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY="your_publishable_key"
-STACK_SECRET_SERVER_KEY="your_secret_key"
+BETTER_AUTH_SECRET="generate-a-32-character-or-longer-secret"
+BETTER_AUTH_URL="http://localhost:3000"
 ```
 
 2. Set up your database:
@@ -162,7 +161,7 @@ Follow along for more full-stack development tutorials, modern web technologies,
 ## 🔗 Useful Links
 
 - [Next.js Documentation](https://nextjs.org/docs)
-- [Stack Auth Documentation](https://docs.stack-auth.com/)
+- [Better Auth Documentation](https://better-auth.com/docs)
 - [Prisma Documentation](https://www.prisma.io/docs)
 - [Tailwind CSS Docs](https://tailwindcss.com/docs)
 - [Lucide Icons](https://lucide.dev/)

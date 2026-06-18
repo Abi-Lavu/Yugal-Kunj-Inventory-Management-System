@@ -1,135 +1,158 @@
 import Sidebar from "@/components/sidebar";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { createProduct } from "@/lib/actions/products";
 import { getCurrentUser } from "@/lib/auth";
+import { cn } from "@/lib/utils";
+import { AlertCircle, ArrowLeft, PackagePlus } from "lucide-react";
 import Link from "next/link";
 
-export default async function AddProductPage() {
-  const user = await getCurrentUser();
+const ERROR_MESSAGES: Record<string, string> = {
+  "duplicate-name": "A product with this name already exists.",
+  "duplicate-sku": "A product with this SKU already exists.",
+  invalid: "Please check the form and try again.",
+  failed: "Something went wrong. Please try again.",
+};
+
+export default async function AddProductPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  await getCurrentUser();
+  const { error } = await searchParams;
+  const errorMessage = error ? ERROR_MESSAGES[error] : null;
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/20">
       <Sidebar currentPath="/add-product" />
 
-      <main className="ml-64 p-8">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900">
-                Add Product
-              </h1>
-              <p className="text-sm text-gray-500">
-                Add a new product to your inventory
-              </p>
-            </div>
+      <main className="ml-64 min-h-screen p-6 lg:p-10">
+        <div className="mx-auto max-w-2xl">
+          <div className="mb-8 animate-in fade-in slide-in-from-bottom-3 duration-500">
+            <Link
+              href="/inventory"
+              className="mb-3 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back to inventory
+            </Link>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Add Product
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Add a new product to your inventory.
+            </p>
           </div>
-        </div>
 
-        <div className="max-w-2xl">
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <form className="space-y-6" action={createProduct}>
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Product Name *
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-transparent"
-                  placeholder="Enter Product Name"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="quantity"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Quantity *
-                  </label>
-                  <input
-                    type="number"
-                    id="quantity"
-                    name="quantity"
-                    min="0"
+          <Card
+            style={{ animationDelay: "80ms" }}
+            className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+          >
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <PackagePlus className="h-4 w-4 text-violet-600" />
+                Product details
+              </CardTitle>
+              <CardDescription>Fields marked * are required.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {errorMessage && (
+                <div className="mb-5 flex animate-in fade-in slide-in-from-top-1 items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 duration-300">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  {errorMessage}
+                </div>
+              )}
+              <form className="space-y-5" action={createProduct}>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Product Name *</Label>
+                  <Input
+                    id="name"
+                    name="name"
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-transparent"
-                    placeholder="0"
+                    placeholder="Enter product name"
+                    className="h-9"
                   />
                 </div>
-                <div>
-                  <label
-                    htmlFor="price"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Price *
-                  </label>
-                  <input
-                    type="number"
-                    id="price"
-                    name="price"
-                    step="0.01"
-                    min="0"
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-transparent"
-                    placeholder="0.0"
+
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="quantity">Quantity *</Label>
+                    <Input
+                      id="quantity"
+                      name="quantity"
+                      type="number"
+                      min="0"
+                      required
+                      placeholder="0"
+                      className="h-9"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="price">Price *</Label>
+                    <Input
+                      id="price"
+                      name="price"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      required
+                      placeholder="0.00"
+                      className="h-9"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sku">SKU (optional)</Label>
+                  <Input
+                    id="sku"
+                    name="sku"
+                    placeholder="Enter SKU"
+                    className="h-9"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label
-                  htmlFor="sku"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  SKU (optional)
-                </label>
-                <input
-                  type="text"
-                  id="sku"
-                  name="sku"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-transparent"
-                  placeholder="Enter SKU"
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lowStockAt">Low Stock At (optional)</Label>
+                  <Input
+                    id="lowStockAt"
+                    name="lowStockAt"
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 5"
+                    className="h-9"
+                  />
+                </div>
 
-              <div>
-                <label
-                  htmlFor="lowStockAt"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Low Stock At (optional)
-                </label>
-                <input
-                  type="number"
-                  id="lowStockAt"
-                  name="lowStockAt"
-                  min="0"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-transparent"
-                  placeholder="Enter low stock threshold"
-                />
-              </div>
-
-              <div className="flex gap-5">
-                <button
-                  type="submit"
-                  className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-                >
-                  Add Product
-                </button>
-                <Link
-                  href="/inventory"
-                  className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
-                >
-                  Cancel
-                </Link>
-              </div>
-            </form>
-          </div>
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    type="submit"
+                    className="h-9 gap-1.5 px-5 shadow-sm shadow-violet-600/20"
+                  >
+                    <PackagePlus className="h-4 w-4" />
+                    Add Product
+                  </Button>
+                  <Link
+                    href="/inventory"
+                    className={cn(
+                      buttonVariants({ variant: "outline" }),
+                      "h-9 px-5"
+                    )}
+                  >
+                    Cancel
+                  </Link>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>

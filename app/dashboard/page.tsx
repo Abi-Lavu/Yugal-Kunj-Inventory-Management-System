@@ -1,25 +1,33 @@
 import ProductsChart from "@/components/products-chart";
 import Sidebar from "@/components/sidebar";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { TrendingUp } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  AlertTriangle,
+  DollarSign,
+  Package,
+  PackageX,
+  Plus,
+} from "lucide-react";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
-  const userId = user.id;
 
-  const [totalProducts, lowStock, allProducts] = await Promise.all([
-    prisma.product.count({ where: { userId } }),
-    prisma.product.count({
-      where: {
-        userId,
-        lowStockAt: { not: null },
-        quantity: { lte: 5 },
-      },
-    }),
+  const [totalProducts, allProducts] = await Promise.all([
+    prisma.product.count(),
     prisma.product.findMany({
-      where: { userId },
-      select: { price: true, quantity: true, createdAt: true },
+      select: { price: true, quantity: true, lowStockAt: true, createdAt: true },
     }),
   ]);
 
@@ -28,10 +36,13 @@ export default async function DashboardPage() {
     0
   );
 
-  const inStockCount = allProducts.filter((p) => Number(p.quantity) > 5).length;
-  const lowStockCount = allProducts.filter(
-    (p) => Number(p.quantity) <= 5 && Number(p.quantity) >= 1
+  const inStockCount = allProducts.filter(
+    (p) => Number(p.quantity) > (p.lowStockAt ?? 5)
   ).length;
+  const lowStockCount = allProducts.filter(
+    (p) => Number(p.quantity) <= (p.lowStockAt ?? 5) && Number(p.quantity) >= 1
+  ).length;
+  const lowStock = lowStockCount;
   const outOfStockCount = allProducts.filter(
     (p) => Number(p.quantity) === 0
   ).length;
@@ -42,6 +53,9 @@ export default async function DashboardPage() {
     totalProducts > 0 ? Math.round((lowStockCount / totalProducts) * 100) : 0;
   const outOfStockPercentage =
     totalProducts > 0 ? Math.round((outOfStockCount / totalProducts) * 100) : 0;
+  const inStockDegrees = (inStockPercentage / 100) * 360;
+  const lowStockDegrees = (lowStockPercentage / 100) * 360;
+  const outOfStockDegrees = (outOfStockPercentage / 100) * 360;
 
   const now = new Date();
   const weeklyProductsData = [];
@@ -53,12 +67,12 @@ export default async function DashboardPage() {
 
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekEnd.getDate() + 6);
-    weekStart.setHours(23, 59, 59, 999);
+    weekEnd.setHours(23, 59, 59, 999);
 
     const weekLabel = `${String(weekStart.getMonth() + 1).padStart(
       2,
       "0"
-    )}/${String(weekStart.getDate() + 1).padStart(2, "0")}`;
+    )}/${String(weekStart.getDate()).padStart(2, "0")}`;
 
     const weekProducts = allProducts.filter((product) => {
       const productDate = new Date(product.createdAt);
@@ -72,187 +86,255 @@ export default async function DashboardPage() {
   }
 
   const recent = await prisma.product.findMany({
-    where: { userId },
     orderBy: { createdAt: "desc" },
     take: 5,
   });
 
-  console.log(totalValue);
+  const firstName = user.name?.split(" ")[0] || "there";
+
+  const stats = [
+    {
+      label: "Total Products",
+      value: String(totalProducts),
+      hint: "items tracked",
+      icon: Package,
+      accent: "bg-violet-500/10 text-violet-600",
+    },
+    {
+      label: "Inventory Value",
+      value: `$${Number(totalValue).toFixed(0)}`,
+      hint: "total worth",
+      icon: DollarSign,
+      accent: "bg-emerald-500/10 text-emerald-600",
+    },
+    {
+      label: "Low Stock",
+      value: String(lowStock),
+      hint: "need attention",
+      icon: AlertTriangle,
+      accent: "bg-amber-500/10 text-amber-600",
+    },
+    {
+      label: "Out of Stock",
+      value: String(outOfStockCount),
+      hint: "unavailable",
+      icon: PackageX,
+      accent: "bg-rose-500/10 text-rose-600",
+    },
+  ];
+
+  const statusStyles = [
+    { dot: "bg-rose-500", badge: "border-transparent bg-rose-500/10 text-rose-600" },
+    { dot: "bg-amber-500", badge: "border-transparent bg-amber-500/10 text-amber-600" },
+    { dot: "bg-emerald-500", badge: "border-transparent bg-emerald-500/10 text-emerald-600" },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/20">
       <Sidebar currentPath="/dashboard" />
-      <main className="ml-64 p-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+      <main className="ml-64 min-h-screen p-6 lg:p-10">
+        <div className="mx-auto max-w-7xl">
+          {/* Header */}
+          <div className="mb-8 flex animate-in fade-in slide-in-from-bottom-3 flex-wrap items-end justify-between gap-4 duration-500">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900">
-                Dashboard
+              <h1 className="text-2xl font-semibold tracking-tight">
+                Welcome back, {firstName} 👋
               </h1>
-              <p className="text-sm text-gray-500">
-                Welcome back! Here is an overview of your inventory.
+              <p className="text-sm text-muted-foreground">
+                Here is an overview of your inventory.
               </p>
             </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Key Metrics */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">
-              Key Metrics
-            </h2>
-            <div className="grid grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-gray-900">
-                  {totalProducts}
-                </div>
-                <div className="text-sm text-gray-600">Total Products</div>
-                <div className="flex items-center justify-center mt-1">
-                  <span className="text-xs text-green-600">
-                    +{totalProducts}
-                  </span>
-                  <TrendingUp className="w-3 h-3 text-green-600 ml-1" />
-                </div>
-              </div>
-
-              <div className="text-center">
-                <div className="text-3xl font-bold text-gray-900">
-                  ${Number(totalValue).toFixed(0)}
-                </div>
-                <div className="text-sm text-gray-600">Total Value</div>
-                <div className="flex items-center justify-center mt-1">
-                  <span className="text-xs text-green-600">
-                    +${Number(totalValue).toFixed(0)}
-                  </span>
-                  <TrendingUp className="w-3 h-3 text-green-600 ml-1" />
-                </div>
-              </div>
-
-              <div className="text-center">
-                <div className="text-3xl font-bold text-gray-900">
-                  {lowStock}
-                </div>
-                <div className="text-sm text-gray-600">Low Stock</div>
-                <div className="flex items-center justify-center mt-1">
-                  <span className="text-xs text-green-600">+{lowStock}</span>
-                  <TrendingUp className="w-3 h-3 text-green-600 ml-1" />
-                </div>
-              </div>
-            </div>
+            <Link
+              href="/add-product"
+              className={cn(
+                buttonVariants(),
+                "group h-9 gap-1.5 px-4 shadow-sm shadow-violet-600/20"
+              )}
+            >
+              <Plus className="h-4 w-4 transition-transform group-hover:rotate-90" />
+              Add Product
+            </Link>
           </div>
 
-          {/* Iventory over time */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2>New products per week</h2>
-            </div>
-            <div className="h-48">
-              <ProductsChart data={weeklyProductsData} />
-            </div>
+          {/* Stat cards */}
+          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {stats.map((s, i) => (
+              <Card
+                key={s.label}
+                style={{ animationDelay: `${i * 80}ms` }}
+                className="animate-in fade-in slide-in-from-bottom-4 duration-500 transition-all hover:-translate-y-1 hover:shadow-lg hover:ring-foreground/20"
+              >
+                <CardContent className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{s.label}</p>
+                    <p className="mt-1 text-2xl font-bold tracking-tight">
+                      {s.value}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground/70">
+                      {s.hint}
+                    </p>
+                  </div>
+                  <div
+                    className={cn(
+                      "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover/card:scale-110",
+                      s.accent
+                    )}
+                  >
+                    <s.icon className="h-5 w-5" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Stock Levels */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Stock Levels
-              </h2>
-            </div>
-            <div className="space-y-3">
-              {recent.map((product, key) => {
+          {/* Chart + stock health */}
+          <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <Card
+              style={{ animationDelay: "320ms" }}
+              className="animate-in fade-in slide-in-from-bottom-4 duration-500 lg:col-span-2"
+            >
+              <CardHeader>
+                <CardTitle>New products per week</CardTitle>
+                <CardDescription>Last 12 weeks</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-56">
+                  <ProductsChart data={weeklyProductsData} />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card
+              style={{ animationDelay: "400ms" }}
+              className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+            >
+              <CardHeader>
+                <CardTitle>Stock health</CardTitle>
+                <CardDescription>Distribution by status</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center gap-5">
+                <div
+                  className="relative h-40 w-40 rounded-full"
+                  style={{
+                    background:
+                      totalProducts > 0
+                        ? `conic-gradient(#10b981 0deg ${inStockDegrees}deg, #f59e0b ${inStockDegrees}deg ${
+                            inStockDegrees + lowStockDegrees
+                          }deg, #f43f5e ${inStockDegrees + lowStockDegrees}deg ${
+                            inStockDegrees + lowStockDegrees + outOfStockDegrees
+                          }deg, var(--muted) ${
+                            inStockDegrees + lowStockDegrees + outOfStockDegrees
+                          }deg 360deg)`
+                        : "var(--muted)",
+                  }}
+                >
+                  <div className="absolute inset-[14px] flex items-center justify-center rounded-full bg-card">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">
+                        {inStockPercentage}%
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        In stock
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="w-full space-y-2">
+                  {[
+                    {
+                      dot: "bg-emerald-500",
+                      label: "In Stock",
+                      pct: inStockPercentage,
+                    },
+                    {
+                      dot: "bg-amber-500",
+                      label: "Low Stock",
+                      pct: lowStockPercentage,
+                    },
+                    {
+                      dot: "bg-rose-500",
+                      label: "Out of Stock",
+                      pct: outOfStockPercentage,
+                    },
+                  ].map((row) => (
+                    <div
+                      key={row.label}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={cn("h-2.5 w-2.5 rounded-full", row.dot)}
+                        />
+                        <span className="text-muted-foreground">
+                          {row.label}
+                        </span>
+                      </div>
+                      <span className="font-medium tabular-nums">
+                        {row.pct}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent products */}
+          <Card
+            style={{ animationDelay: "480ms" }}
+            className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+          >
+            <CardHeader className="flex-row items-center justify-between">
+              <div className="grid gap-1">
+                <CardTitle>Recent products</CardTitle>
+                <CardDescription>Latest additions to inventory</CardDescription>
+              </div>
+              <Link
+                href="/inventory"
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "h-8"
+                )}
+              >
+                View all
+              </Link>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {recent.length === 0 && (
+                <div className="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground">
+                  No products yet — add your first one to get started.
+                </div>
+              )}
+              {recent.map((product, i) => {
                 const stockLevel =
                   product.quantity === 0
                     ? 0
                     : product.quantity <= (product.lowStockAt || 5)
                     ? 1
                     : 2;
-
-                const bgColors = [
-                  "bg-red-600",
-                  "bg-yellow-600",
-                  "bg-green-600",
-                ];
-                const textColors = [
-                  "text-red-600",
-                  "text-yellow-600",
-                  "text-green-600",
-                ];
+                const style = statusStyles[stockLevel];
                 return (
                   <div
-                    key={key}
-                    className="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                    key={product.id}
+                    style={{ animationDelay: `${560 + i * 60}ms` }}
+                    className="flex animate-in fade-in slide-in-from-bottom-2 items-center justify-between rounded-lg border bg-card px-4 py-3 duration-500 transition-colors hover:bg-muted/50"
                   >
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className={`w-3 h-3 rounded-full ${bgColors[stockLevel]}`}
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={cn("h-2.5 w-2.5 rounded-full", style.dot)}
                       />
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="text-sm font-medium">
                         {product.name}
                       </span>
                     </div>
-                    <div
-                      className={`text-sm font-medium ${textColors[stockLevel]}`}
-                    >
+                    <Badge variant="outline" className={style.badge}>
                       {product.quantity} units
-                    </div>
+                    </Badge>
                   </div>
                 );
               })}
-            </div>
-          </div>
-
-          {/* Efficiency */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Efficiency
-              </h2>
-            </div>
-            <div className="flex items-center justify-center">
-              <div className="relative w-48 h-48">
-                <div className="absolute inset-0 rounded-full border-8 border-gray-200"></div>
-                <div
-                  className="absolute inset-0 rounded-full border-8 border-purple-600"
-                  style={{
-                    clipPath:
-                      "polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 50%)",
-                  }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-900">
-                      {inStockPercentage}%
-                    </div>
-                    <div className="text-sm text-gray-600">In Stock</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="mt-6 space-y-2">
-              <div className="flex items-center justify-between text-sm text-gray-600">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-purple-200" />
-                  <span>In Stock ({inStockPercentage}%)</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-sm text-gray-600">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-purple-600" />
-                  <span>Low Stock ({lowStockPercentage}%)</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-sm text-gray-600">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-gray-200" />
-                  <span>Out of Stock ({outOfStockPercentage}%)</span>
-                </div>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>
