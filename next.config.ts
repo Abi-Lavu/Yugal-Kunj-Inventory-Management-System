@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    serverActions: {
+      // Allow product image uploads (stored as data URLs) through server actions.
+      bodySizeLimit: "8mb",
+    },
+  },
 };
 
 export default nextConfig;

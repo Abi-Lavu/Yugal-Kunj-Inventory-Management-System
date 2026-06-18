@@ -138,10 +138,10 @@ export default async function DashboardPage() {
           <div className="mb-8 flex animate-in fade-in slide-in-from-bottom-3 flex-wrap items-end justify-between gap-4 duration-500">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">
-                Welcome back, {firstName} 👋
+                Yugal Kunj Inventory Management System
               </h1>
               <p className="text-sm text-muted-foreground">
-                Here is an overview of your inventory.
+                Welcome back, {firstName}. Here is an overview of your inventory.
               </p>
             </div>
             <Link

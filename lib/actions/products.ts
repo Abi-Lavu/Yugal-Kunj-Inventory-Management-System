@@ -43,6 +43,27 @@ export async function createProduct(formData: FormData) {
 
   const { name, sku } = parsed.data;
 
+  // Required image upload -> stored as a data URL in the DB.
+  const image = formData.get("image");
+  if (!(image instanceof File) || image.size === 0) {
+    redirect("/add-product?error=image-required");
+  }
+  if (!image.type.startsWith("image/")) {
+    redirect("/add-product?error=image-invalid");
+  }
+  if (image.size > 6 * 1024 * 1024) {
+    redirect("/add-product?error=image-too-large");
+  }
+  const imageUrl = `data:${image.type};base64,${Buffer.from(
+    await image.arrayBuffer()
+  ).toString("base64")}`;
+
+  // Optional purchase link — normalize to an absolute URL.
+  let purchaseUrl = String(formData.get("purchaseUrl") ?? "").trim();
+  if (purchaseUrl && !/^https?:\/\//i.test(purchaseUrl)) {
+    purchaseUrl = `https://${purchaseUrl}`;
+  }
+
   // No duplicate items: reject a name that already exists (case-insensitive).
   const duplicateName = await prisma.product.findFirst({
     where: { name: { equals: name, mode: "insensitive" } },
@@ -65,7 +86,12 @@ export async function createProduct(formData: FormData) {
 
   try {
     await prisma.product.create({
-      data: { ...parsed.data, userId: user.id },
+      data: {
+        ...parsed.data,
+        imageUrl,
+        purchaseUrl: purchaseUrl || null,
+        userId: user.id,
+      },
     });
   } catch {
     redirect("/add-product?error=failed");

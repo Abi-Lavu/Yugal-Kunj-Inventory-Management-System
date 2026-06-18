@@ -18,6 +18,9 @@ import Link from "next/link";
 const ERROR_MESSAGES: Record<string, string> = {
   "duplicate-name": "A product with this name already exists.",
   "duplicate-sku": "A product with this SKU already exists.",
+  "image-required": "Please attach an image of the product.",
+  "image-invalid": "The attached file must be an image.",
+  "image-too-large": "That image is too large — please use one under 6 MB.",
   invalid: "Please check the form and try again.",
   failed: "Something went wrong. Please try again.",
 };
@@ -82,6 +85,21 @@ export default async function AddProductPage({
                   />
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="image">Product Image *</Label>
+                  <Input
+                    id="image"
+                    name="image"
+                    type="file"
+                    accept="image/*"
+                    required
+                    className="h-auto cursor-pointer py-1.5 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1 file:text-foreground"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Attach a photo of the item (PNG or JPG, up to 6 MB).
+                  </p>
+                </div>
+
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="quantity">Quantity *</Label>
@@ -130,6 +148,21 @@ export default async function AddProductPage({
                     placeholder="e.g. 5"
                     className="h-9"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="purchaseUrl">Purchase Link (optional)</Label>
+                  <Input
+                    id="purchaseUrl"
+                    name="purchaseUrl"
+                    type="text"
+                    inputMode="url"
+                    placeholder="https://store.example.com/item"
+                    className="h-9"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Where this item is purchased.
+                  </p>
                 </div>
 
                 <div className="flex gap-3 pt-2">
