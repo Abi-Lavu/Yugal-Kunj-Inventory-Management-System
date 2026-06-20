@@ -96,28 +96,28 @@ export default async function DashboardPage() {
     {
       label: "Total Products",
       value: String(totalProducts),
-      hint: "items tracked",
+      hint: "",
       icon: Package,
       accent: "bg-violet-500/10 text-violet-600",
     },
     {
       label: "Inventory Value",
       value: `$${Number(totalValue).toFixed(0)}`,
-      hint: "total worth",
+      hint: "",
       icon: DollarSign,
       accent: "bg-emerald-500/10 text-emerald-600",
     },
     {
       label: "Low Stock",
       value: String(lowStock),
-      hint: "need attention",
+      hint: "",
       icon: AlertTriangle,
       accent: "bg-amber-500/10 text-amber-600",
     },
     {
       label: "Out of Stock",
       value: String(outOfStockCount),
-      hint: "unavailable",
+      hint: "",
       icon: PackageX,
       accent: "bg-rose-500/10 text-rose-600",
     },
@@ -194,8 +194,8 @@ export default async function DashboardPage() {
               className="animate-in fade-in slide-in-from-bottom-4 duration-500 lg:col-span-2"
             >
               <CardHeader>
-                <CardTitle>New products per week</CardTitle>
-                <CardDescription>Last 12 weeks</CardDescription>
+                <CardTitle>New Products Per Week</CardTitle>
+                <CardDescription>Last 12 Weeks</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-56">
@@ -209,8 +209,8 @@ export default async function DashboardPage() {
               className="animate-in fade-in slide-in-from-bottom-4 duration-500"
             >
               <CardHeader>
-                <CardTitle>Stock health</CardTitle>
-                <CardDescription>Distribution by status</CardDescription>
+                <CardTitle>Stock Overview</CardTitle>
+                <CardDescription></CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col items-center gap-5">
                 <div
@@ -286,8 +286,8 @@ export default async function DashboardPage() {
           >
             <CardHeader className="flex-row items-center justify-between">
               <div className="grid gap-1">
-                <CardTitle>Recent products</CardTitle>
-                <CardDescription>Latest additions to inventory</CardDescription>
+                <CardTitle>Recent Products</CardTitle>
+                <CardDescription>Latest Additions To Inventory</CardDescription>
               </div>
               <Link
                 href="/inventory"
