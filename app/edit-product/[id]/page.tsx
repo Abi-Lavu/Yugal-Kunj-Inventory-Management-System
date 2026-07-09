@@ -7,22 +7,32 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createProduct } from "@/lib/actions/products";
+import { updateProduct } from "@/lib/actions/products";
 import { getCurrentUser } from "@/lib/auth";
-import { ArrowLeft, PackagePlus } from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import { ArrowLeft, SquarePen } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
-export default async function AddProductPage({
+export default async function EditProductPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ id: string }>;
   searchParams: Promise<{ error?: string }>;
 }) {
   await getCurrentUser();
+  const { id } = await params;
   const { error } = await searchParams;
+
+  const product = await prisma.product.findUnique({ where: { id } });
+  if (!product) {
+    redirect("/inventory");
+  }
 
   return (
     <div className="min-h-screen bg-muted/20">
-      <Sidebar currentPath="/add-product" />
+      <Sidebar currentPath="/inventory" />
 
       <main className="ml-64 min-h-screen p-6 lg:p-10">
         <div className="mx-auto max-w-2xl">
@@ -34,10 +44,10 @@ export default async function AddProductPage({
               <ArrowLeft className="h-4 w-4" /> Back to inventory
             </Link>
             <h1 className="text-2xl font-semibold tracking-tight">
-              Add Product
+              Edit Product
             </h1>
             <p className="text-sm text-muted-foreground">
-              Add a new product to your inventory.
+              Update the details for “{product.name}”.
             </p>
           </div>
 
@@ -47,16 +57,26 @@ export default async function AddProductPage({
           >
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <PackagePlus className="h-4 w-4 text-violet-600" />
+                <SquarePen className="h-4 w-4 text-violet-600" />
                 Product details
               </CardTitle>
-              <CardDescription>Fields marked * are required.</CardDescription>
+              <CardDescription>Change any field, then save.</CardDescription>
             </CardHeader>
             <CardContent>
               <ProductForm
-                action={createProduct}
-                mode="create"
+                action={updateProduct}
+                mode="edit"
                 errorMessage={productErrorMessage(error)}
+                product={{
+                  id: product.id,
+                  name: product.name,
+                  sku: product.sku,
+                  price: Number(product.price).toFixed(2),
+                  quantity: product.quantity,
+                  lowStockAt: product.lowStockAt,
+                  imageUrl: product.imageUrl,
+                  purchaseUrl: product.purchaseUrl,
+                }}
               />
             </CardContent>
           </Card>

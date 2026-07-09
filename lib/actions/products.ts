@@ -101,3 +101,86 @@ export async function createProduct(formData: FormData) {
   revalidatePath("/dashboard");
   redirect("/inventory");
 }
+
+export async function updateProduct(formData: FormData) {
+  await getCurrentUser();
+
+  const id = String(formData.get("id") || "");
+  if (!id) {
+    redirect("/inventory");
+  }
+
+  const parsed = ProductSchema.safeParse({
+    name: formData.get("name"),
+    price: formData.get("price"),
+    quantity: formData.get("quantity"),
+    sku: formData.get("sku") || undefined,
+    lowStockAt: formData.get("lowStockAt") || undefined,
+  });
+
+  if (!parsed.success) {
+    redirect(`/edit-product/${id}?error=invalid`);
+  }
+
+  const { name, price, quantity, sku, lowStockAt } = parsed.data;
+
+  // Optional replacement image — keep the existing one if none is uploaded.
+  const image = formData.get("image");
+  let imageUrl: string | undefined;
+  if (image instanceof File && image.size > 0) {
+    if (!image.type.startsWith("image/")) {
+      redirect(`/edit-product/${id}?error=image-invalid`);
+    }
+    if (image.size > 6 * 1024 * 1024) {
+      redirect(`/edit-product/${id}?error=image-too-large`);
+    }
+    imageUrl = `data:${image.type};base64,${Buffer.from(
+      await image.arrayBuffer()
+    ).toString("base64")}`;
+  }
+
+  // Optional purchase link — normalize to an absolute URL.
+  let purchaseUrl = String(formData.get("purchaseUrl") ?? "").trim();
+  if (purchaseUrl && !/^https?:\/\//i.test(purchaseUrl)) {
+    purchaseUrl = `https://${purchaseUrl}`;
+  }
+
+  // Duplicate checks that ignore the product being edited.
+  const duplicateName = await prisma.product.findFirst({
+    where: { name: { equals: name, mode: "insensitive" }, NOT: { id } },
+    select: { id: true },
+  });
+  if (duplicateName) {
+    redirect(`/edit-product/${id}?error=duplicate-name`);
+  }
+  if (sku) {
+    const duplicateSku = await prisma.product.findFirst({
+      where: { sku: { equals: sku, mode: "insensitive" }, NOT: { id } },
+      select: { id: true },
+    });
+    if (duplicateSku) {
+      redirect(`/edit-product/${id}?error=duplicate-sku`);
+    }
+  }
+
+  try {
+    await prisma.product.update({
+      where: { id },
+      data: {
+        name,
+        price,
+        quantity,
+        sku: sku ?? null,
+        lowStockAt: lowStockAt ?? null,
+        purchaseUrl: purchaseUrl || null,
+        ...(imageUrl ? { imageUrl } : {}),
+      },
+    });
+  } catch {
+    redirect(`/edit-product/${id}?error=failed`);
+  }
+
+  revalidatePath("/inventory");
+  revalidatePath("/dashboard");
+  redirect("/inventory");
+}

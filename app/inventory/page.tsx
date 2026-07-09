@@ -17,6 +17,7 @@ import {
   ExternalLink,
   ImageOff,
   ListFilter,
+  Pencil,
   Plus,
 } from "lucide-react";
 import Link from "next/link";
@@ -242,6 +243,18 @@ export default async function InventoryPage({
                     style={{ animationDelay: `${120 + i * 60}ms` }}
                     className="group relative animate-in fade-in slide-in-from-bottom-3 gap-0 overflow-hidden p-0 duration-500 transition-all hover:-translate-y-1 hover:shadow-lg hover:ring-foreground/20"
                   >
+                    {/* edit: green pencil, top-left of the box */}
+                    <div className="absolute left-2 top-2 z-10 rounded-md bg-card/70 backdrop-blur-sm">
+                      <Link
+                        href={`/edit-product/${product.id}`}
+                        aria-label={`Edit ${product.name}`}
+                        title="Edit"
+                        className="inline-flex items-center justify-center rounded-md p-1.5 text-emerald-600 transition-colors hover:bg-emerald-500/10 hover:text-emerald-700"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+
                     {/* delete: small red line, top-right of the box */}
                     <div className="absolute right-2 top-2 z-10 rounded-md bg-card/70 backdrop-blur-sm">
                       <DeleteProductDialog
