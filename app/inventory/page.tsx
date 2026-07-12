@@ -1,4 +1,5 @@
 import DeleteProductDialog from "@/components/delete-product-dialog";
+import ExportMenu from "@/components/export-menu";
 import InventorySearch from "@/components/inventory-search";
 import Pagination from "@/components/pagination";
 import Sidebar from "@/components/sidebar";
@@ -169,16 +170,19 @@ export default async function InventoryPage({
                 Manage your products and track stock levels.
               </p>
             </div>
-            <Link
-              href="/add-product"
-              className={cn(
-                buttonVariants(),
-                "group h-9 gap-1.5 px-4 shadow-sm shadow-violet-600/20"
-              )}
-            >
-              <Plus className="h-4 w-4 transition-transform group-hover:rotate-90" />
-              Add Product
-            </Link>
+            <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-end">
+              <Link
+                href="/add-product"
+                className={cn(
+                  buttonVariants(),
+                  "group h-9 w-full gap-1.5 px-4 shadow-sm shadow-violet-600/20 sm:w-auto"
+                )}
+              >
+                <Plus className="h-4 w-4 transition-transform group-hover:rotate-90" />
+                Add Product
+              </Link>
+              <ExportMenu />
+            </div>
           </div>
 
           {/* search + status filter */}
