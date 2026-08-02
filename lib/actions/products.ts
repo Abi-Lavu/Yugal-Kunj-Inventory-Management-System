@@ -43,7 +43,6 @@ export async function createProduct(formData: FormData) {
 
   const { name, sku } = parsed.data;
 
-  // Required image upload -> stored as a data URL in the DB.
   const image = formData.get("image");
   if (!(image instanceof File) || image.size === 0) {
     redirect("/add-product?error=image-required");
@@ -58,13 +57,11 @@ export async function createProduct(formData: FormData) {
     await image.arrayBuffer()
   ).toString("base64")}`;
 
-  // Optional purchase link — normalize to an absolute URL.
   let purchaseUrl = String(formData.get("purchaseUrl") ?? "").trim();
   if (purchaseUrl && !/^https?:\/\//i.test(purchaseUrl)) {
     purchaseUrl = `https://${purchaseUrl}`;
   }
 
-  // No duplicate items: reject a name that already exists (case-insensitive).
   const duplicateName = await prisma.product.findFirst({
     where: { name: { equals: name, mode: "insensitive" } },
     select: { id: true },
@@ -72,8 +69,6 @@ export async function createProduct(formData: FormData) {
   if (duplicateName) {
     redirect("/add-product?error=duplicate-name");
   }
-
-  // SKUs are unique too — block a duplicate before hitting the DB constraint.
   if (sku) {
     const duplicateSku = await prisma.product.findFirst({
       where: { sku: { equals: sku, mode: "insensitive" } },
@@ -124,7 +119,6 @@ export async function updateProduct(formData: FormData) {
 
   const { name, price, quantity, sku, lowStockAt } = parsed.data;
 
-  // Optional replacement image — keep the existing one if none is uploaded.
   const image = formData.get("image");
   let imageUrl: string | undefined;
   if (image instanceof File && image.size > 0) {
@@ -139,13 +133,11 @@ export async function updateProduct(formData: FormData) {
     ).toString("base64")}`;
   }
 
-  // Optional purchase link — normalize to an absolute URL.
   let purchaseUrl = String(formData.get("purchaseUrl") ?? "").trim();
   if (purchaseUrl && !/^https?:\/\//i.test(purchaseUrl)) {
     purchaseUrl = `https://${purchaseUrl}`;
   }
 
-  // Duplicate checks that ignore the product being edited.
   const duplicateName = await prisma.product.findFirst({
     where: { name: { equals: name, mode: "insensitive" }, NOT: { id } },
     select: { id: true },

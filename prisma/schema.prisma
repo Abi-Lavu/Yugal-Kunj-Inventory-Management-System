@@ -15,14 +15,14 @@ datasource db {
 
 model Product {
   id String @id @default(cuid())
-  userId String // Better Auth user ID for the member who added this product
+  userId String 
   name String
   sku String? @unique
   price Decimal @db.Decimal(12,2)
   quantity Int @default(0)
   lowStockAt Int?
-  imageUrl String? // data URL of the attached product image
-  purchaseUrl String? // optional link to where the item is purchased
+  imageUrl String? 
+  purchaseUrl String? 
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
