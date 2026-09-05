@@ -96,6 +96,7 @@ model Verification {
   userId      String   
   userName    String   
   userEmail   String
+  details     String?
   createdAt   DateTime @default(now())
 
   @@index([createdAt])

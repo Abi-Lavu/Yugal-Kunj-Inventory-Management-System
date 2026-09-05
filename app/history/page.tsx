@@ -120,8 +120,13 @@ export default async function HistoryPage({
                           {style.label}
                         </Badge>
                       </TableCell>
-                      <TableCell className="py-3 font-medium">
-                        {log.productName}
+                      <TableCell className="py-3">
+                        <div className="font-medium">{log.productName}</div>
+                        {log.details && (
+                          <div className="mt-0.5 text-xs text-muted-foreground">
+                            {log.details}
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="py-3 pr-6 text-right text-muted-foreground">
                         {log.createdAt.toLocaleString("en-US", {

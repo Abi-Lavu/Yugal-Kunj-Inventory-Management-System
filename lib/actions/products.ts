@@ -18,22 +18,25 @@ export async function deleteProduct(formData: FormData) {
   const user = await getCurrentUser();
   const id = String(formData.get("id") || "");
 
-  // Grab the name before the row is gone, so the history stays readable.
-  const product = await prisma.product.findUnique({
+  // Read the row before deleting so the history stays readable afterwards.
+  const before = await prisma.product.findUnique({
     where: { id },
-    select: { name: true },
+    select: { name: true, quantity: true, price: true },
   });
 
   await prisma.product.deleteMany({
     where: { id },
   });
 
-  if (product) {
+  if (before) {
     await prisma.auditLog.create({
       data: {
         action: "DELETE",
         productId: null,
-        productName: product.name,
+        productName: before.name,
+        details: `Was quantity ${before.quantity}, price $${Number(
+          before.price
+        ).toFixed(2)}`,
         userId: user.id,
         userName: user.name,
         userEmail: user.email,
@@ -61,7 +64,7 @@ export async function createProduct(formData: FormData) {
     redirect("/add-product?error=invalid");
   }
 
-  const { name, sku } = parsed.data;
+  const { name, sku, price, quantity } = parsed.data;
 
   const image = formData.get("image");
   if (!(image instanceof File) || image.size === 0) {
@@ -119,6 +122,9 @@ export async function createProduct(formData: FormData) {
       action: "CREATE",
       productId: createdId,
       productName: name,
+      details: `Quantity ${quantity} · Price $${price.toFixed(2)}${
+        sku ? ` · SKU ${sku}` : ""
+      }`,
       userId: user.id,
       userName: user.name,
       userEmail: user.email,
@@ -136,6 +142,12 @@ export async function updateProduct(formData: FormData) {
 
   const id = String(formData.get("id") || "");
   if (!id) {
+    redirect("/inventory");
+  }
+
+  // Snapshot the row BEFORE the update so we can report exactly what changed.
+  const before = await prisma.product.findUnique({ where: { id } });
+  if (!before) {
     redirect("/inventory");
   }
 
@@ -206,11 +218,40 @@ export async function updateProduct(formData: FormData) {
     redirect(`/edit-product/${id}?error=failed`);
   }
 
+  // Compare old vs new, field by field, and describe only what actually changed.
+  const changes: string[] = [];
+  if (before.name !== name) {
+    changes.push(`Name: "${before.name}" → "${name}"`);
+  }
+  if (Number(before.price) !== price) {
+    changes.push(
+      `Price: $${Number(before.price).toFixed(2)} → $${price.toFixed(2)}`
+    );
+  }
+  if (before.quantity !== quantity) {
+    changes.push(`Quantity: ${before.quantity} → ${quantity}`);
+  }
+  if ((before.sku ?? "") !== (sku ?? "")) {
+    changes.push(`SKU: ${before.sku || "—"} → ${sku || "—"}`);
+  }
+  if ((before.lowStockAt ?? null) !== (lowStockAt ?? null)) {
+    changes.push(
+      `Low stock at: ${before.lowStockAt ?? "—"} → ${lowStockAt ?? "—"}`
+    );
+  }
+  if ((before.purchaseUrl ?? "") !== (purchaseUrl || "")) {
+    changes.push("Purchase link changed");
+  }
+  if (imageUrl) {
+    changes.push("Image replaced");
+  }
+
   await prisma.auditLog.create({
     data: {
       action: "UPDATE",
       productId: id,
       productName: name,
+      details: changes.length > 0 ? changes.join(" · ") : "No fields changed",
       userId: user.id,
       userName: user.name,
       userEmail: user.email,
