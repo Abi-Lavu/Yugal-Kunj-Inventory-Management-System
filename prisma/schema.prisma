@@ -88,3 +88,17 @@ model Verification {
 
   @@map("verification")
 }
+  model AuditLog {
+  id          String   @id @default(cuid())
+  action      String  
+  productId   String?  
+  productName String   
+  userId      String   
+  userName    String   
+  userEmail   String
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+

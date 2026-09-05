@@ -41,7 +41,7 @@ function LoadingSidebar() {
         <div className="px-3 pb-2">
           <div className="h-2 w-10 rounded bg-white/10" />
         </div>
-        {[0, 1, 2, 3].map((i) => (
+        {[0, 1, 2, 3, 4].map((i) => (
           <div key={i} className="flex items-center gap-3 px-3 py-2.5">
             <div className="h-[18px] w-[18px] rounded bg-white/10" />
             <div className="h-3.5 w-24 rounded bg-white/10" />

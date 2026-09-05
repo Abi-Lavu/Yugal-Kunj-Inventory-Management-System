@@ -15,15 +15,35 @@ const ProductSchema = z.object({
 });
 
 export async function deleteProduct(formData: FormData) {
-  await getCurrentUser();
+  const user = await getCurrentUser();
   const id = String(formData.get("id") || "");
+
+  // Grab the name before the row is gone, so the history stays readable.
+  const product = await prisma.product.findUnique({
+    where: { id },
+    select: { name: true },
+  });
 
   await prisma.product.deleteMany({
     where: { id },
   });
 
+  if (product) {
+    await prisma.auditLog.create({
+      data: {
+        action: "DELETE",
+        productId: null,
+        productName: product.name,
+        userId: user.id,
+        userName: user.name,
+        userEmail: user.email,
+      },
+    });
+  }
+
   revalidatePath("/inventory");
   revalidatePath("/dashboard");
+  revalidatePath("/history");
 }
 
 export async function createProduct(formData: FormData) {
@@ -79,8 +99,9 @@ export async function createProduct(formData: FormData) {
     }
   }
 
+  let createdId: string | null = null;
   try {
-    await prisma.product.create({
+    const created = await prisma.product.create({
       data: {
         ...parsed.data,
         imageUrl,
@@ -88,17 +109,30 @@ export async function createProduct(formData: FormData) {
         userId: user.id,
       },
     });
+    createdId = created.id;
   } catch {
     redirect("/add-product?error=failed");
   }
 
+  await prisma.auditLog.create({
+    data: {
+      action: "CREATE",
+      productId: createdId,
+      productName: name,
+      userId: user.id,
+      userName: user.name,
+      userEmail: user.email,
+    },
+  });
+
   revalidatePath("/inventory");
   revalidatePath("/dashboard");
+  revalidatePath("/history");
   redirect("/inventory");
 }
 
 export async function updateProduct(formData: FormData) {
-  await getCurrentUser();
+  const user = await getCurrentUser();
 
   const id = String(formData.get("id") || "");
   if (!id) {
@@ -172,7 +206,19 @@ export async function updateProduct(formData: FormData) {
     redirect(`/edit-product/${id}?error=failed`);
   }
 
+  await prisma.auditLog.create({
+    data: {
+      action: "UPDATE",
+      productId: id,
+      productName: name,
+      userId: user.id,
+      userName: user.name,
+      userEmail: user.email,
+    },
+  });
+
   revalidatePath("/inventory");
   revalidatePath("/dashboard");
+  revalidatePath("/history");
   redirect("/inventory");
 }

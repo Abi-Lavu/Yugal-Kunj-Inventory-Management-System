@@ -1,6 +1,6 @@
 import UserMenu from "@/components/auth/user-menu";
 import { cn } from "@/lib/utils";
-import { BarChart3, Boxes, Package, Plus, Settings } from "lucide-react";
+import { BarChart3, Boxes, History, Package, Plus, Settings } from "lucide-react";
 import Link from "next/link";
 
 export default function Sidebar({
@@ -12,6 +12,7 @@ export default function Sidebar({
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
     { name: "Inventory", href: "/inventory", icon: Package },
     { name: "Add Product", href: "/add-product", icon: Plus },
+    { name: "History", href: "/history", icon: History },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 

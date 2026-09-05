@@ -68,7 +68,7 @@ export async function GET(request: Request) {
 
   if (format === "xlsx") {
     const buffer = buildXlsx("Inventory", header, rows);
-    return new Response(buffer, {
+    return new Response(new Uint8Array(buffer), {
       headers: {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
