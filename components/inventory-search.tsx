@@ -44,8 +44,8 @@ export default function InventorySearch({
         name="q"
         type="search"
         defaultValue={defaultQuery}
-        placeholder="Search products by name..."
-        aria-label="Search products"
+        placeholder="Search by product name or SKU"
+        aria-label="Search by product name or SKU"
         className="h-9 pl-9 pr-9"
         onChange={(e) => handleChange(e.target.value)}
       />

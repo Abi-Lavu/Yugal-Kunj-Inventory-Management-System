@@ -82,7 +82,14 @@ export default async function InventoryPage({
   const pageSize = 9;
 
   const conditions = [
-    q ? { name: { contains: q, mode: "insensitive" as const } } : null,
+    q
+      ? {
+          OR: [
+            { name: { contains: q, mode: "insensitive" as const } },
+            { sku: { contains: q, mode: "insensitive" as const } },
+          ],
+        }
+      : null,
     statusFilter(status),
   ].filter(Boolean) as Prisma.ProductWhereInput[];
   const where: Prisma.ProductWhereInput =
