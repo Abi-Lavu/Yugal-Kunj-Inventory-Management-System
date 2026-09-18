@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getStockStatus } from "@/lib/stock-status";
 import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
@@ -37,14 +38,14 @@ export default async function DashboardPage() {
   );
 
   const inStockCount = allProducts.filter(
-    (p) => Number(p.quantity) > (p.lowStockAt ?? 5)
+    (p) => getStockStatus(p.quantity, p.lowStockAt) === "in"
   ).length;
   const lowStockCount = allProducts.filter(
-    (p) => Number(p.quantity) <= (p.lowStockAt ?? 5) && Number(p.quantity) >= 1
+    (p) => getStockStatus(p.quantity, p.lowStockAt) === "low"
   ).length;
   const lowStock = lowStockCount;
   const outOfStockCount = allProducts.filter(
-    (p) => Number(p.quantity) === 0
+    (p) => getStockStatus(p.quantity, p.lowStockAt) === "out"
   ).length;
 
   const inStockPercentage =
@@ -123,11 +124,11 @@ export default async function DashboardPage() {
     },
   ];
 
-  const statusStyles = [
-    { dot: "bg-rose-500", badge: "border-transparent bg-rose-500/10 text-rose-600" },
-    { dot: "bg-amber-500", badge: "border-transparent bg-amber-500/10 text-amber-600" },
-    { dot: "bg-emerald-500", badge: "border-transparent bg-emerald-500/10 text-emerald-600" },
-  ];
+  const statusStyles = {
+    out: { dot: "bg-rose-500", badge: "border-transparent bg-rose-500/10 text-rose-600" },
+    low: { dot: "bg-amber-500", badge: "border-transparent bg-amber-500/10 text-amber-600" },
+    in: { dot: "bg-emerald-500", badge: "border-transparent bg-emerald-500/10 text-emerald-600" },
+  };
 
   return (
     <div className="min-h-screen bg-muted/20">
@@ -306,12 +307,10 @@ export default async function DashboardPage() {
                 </div>
               )}
               {recent.map((product, i) => {
-                const stockLevel =
-                  product.quantity === 0
-                    ? 0
-                    : product.quantity <= (product.lowStockAt || 5)
-                    ? 1
-                    : 2;
+                const stockLevel = getStockStatus(
+                  product.quantity,
+                  product.lowStockAt
+                );
                 const style = statusStyles[stockLevel];
                 return (
                   <div

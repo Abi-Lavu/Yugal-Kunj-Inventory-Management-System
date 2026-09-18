@@ -9,6 +9,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { deleteProduct } from "@/lib/actions/products";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  DEFAULT_LOW_STOCK_THRESHOLD,
+  getStockStatus,
+  STOCK_STATUS_LABELS,
+} from "@/lib/stock-status";
 import { cn } from "@/lib/utils";
 import { Prisma } from "@prisma/client";
 import {
@@ -23,17 +28,15 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-// Default low-stock threshold when a product has none set (matches the badge).
-const DEFAULT_LOW = 5;
 const STATUS_KEYS = ["in", "low", "out"] as const;
 
-// Translate a stock-status filter into a DB query. The effective threshold is
-// `lowStockAt || DEFAULT_LOW`, so null/0 thresholds fall back to DEFAULT_LOW.
+// Keep DB filtering aligned with getStockStatus so counts and pagination match
+// the badges. Only null uses the default; zero is a custom threshold.
 function statusFilter(status: string): Prisma.ProductWhereInput | null {
   const usesDefault: Prisma.ProductWhereInput = {
-    OR: [{ lowStockAt: null }, { lowStockAt: 0 }],
+    lowStockAt: null,
   };
-  const usesCustom: Prisma.ProductWhereInput = { lowStockAt: { gt: 0 } };
+  const usesCustom: Prisma.ProductWhereInput = { lowStockAt: { gte: 0 } };
   const lowRef = prisma.product.fields.lowStockAt;
 
   switch (status) {
@@ -43,14 +46,14 @@ function statusFilter(status: string): Prisma.ProductWhereInput | null {
       return {
         quantity: { gte: 1 },
         OR: [
-          { AND: [usesDefault, { quantity: { lte: DEFAULT_LOW } }] },
+          { AND: [usesDefault, { quantity: { lte: DEFAULT_LOW_STOCK_THRESHOLD } }] },
           { AND: [usesCustom, { quantity: { lte: lowRef } }] },
         ],
       };
     case "in":
       return {
         OR: [
-          { AND: [usesDefault, { quantity: { gt: DEFAULT_LOW } }] },
+          { AND: [usesDefault, { quantity: { gt: DEFAULT_LOW_STOCK_THRESHOLD } }] },
           { AND: [usesCustom, { quantity: { gt: lowRef } }] },
         ],
       };
@@ -97,23 +100,23 @@ export default async function InventoryPage({
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  const statusStyles = [
-    {
-      label: "Out of stock",
+  const statusStyles = {
+    out: {
+      label: STOCK_STATUS_LABELS.out,
       icon: AlertCircle,
       badge: "border-transparent bg-rose-500/10 text-rose-600",
     },
-    {
-      label: "Low stock",
+    low: {
+      label: STOCK_STATUS_LABELS.low,
       icon: AlertTriangle,
       badge: "border-transparent bg-amber-500/10 text-amber-600",
     },
-    {
-      label: "In stock",
+    in: {
+      label: STOCK_STATUS_LABELS.in,
       icon: CheckCircle2,
       badge: "border-transparent bg-emerald-500/10 text-emerald-600",
     },
-  ];
+  };
 
   // Filter pills (server-rendered links that set ?status=, preserving the search).
   const filterHref = (key: string) => {
@@ -233,12 +236,10 @@ export default async function InventoryPage({
           ) : (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {items.map((product, i) => {
-                const stockLevel =
-                  product.quantity === 0
-                    ? 0
-                    : product.quantity <= (product.lowStockAt || DEFAULT_LOW)
-                    ? 1
-                    : 2;
+                const stockLevel = getStockStatus(
+                  product.quantity,
+                  product.lowStockAt
+                );
                 const s = statusStyles[stockLevel];
                 const StatusIcon = s.icon;
                 return (

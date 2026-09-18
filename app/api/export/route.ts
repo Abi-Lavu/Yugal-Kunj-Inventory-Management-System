@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getStockStatus, STOCK_STATUS_LABELS } from "@/lib/stock-status";
 import { buildXlsx } from "@/lib/xlsx";
 import { headers } from "next/headers";
 
@@ -45,13 +46,7 @@ export async function GET(request: Request) {
   ];
 
   const rows: Cell[][] = products.map((p) => {
-    const threshold = p.lowStockAt || 5;
-    const status =
-      p.quantity === 0
-        ? "Out of stock"
-        : p.quantity <= threshold
-        ? "Low stock"
-        : "In stock";
+    const status = STOCK_STATUS_LABELS[getStockStatus(p.quantity, p.lowStockAt)];
     return [
       p.name,
       p.sku ?? "",

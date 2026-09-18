@@ -1,6 +1,7 @@
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DEFAULT_LOW_STOCK_THRESHOLD } from "@/lib/stock-status";
 import { cn } from "@/lib/utils";
 import { AlertCircle, PackagePlus, Save } from "lucide-react";
 import Link from "next/link";
@@ -147,9 +148,14 @@ export default function ProductForm({
           type="number"
           min="0"
           defaultValue={product?.lowStockAt ?? ""}
-          placeholder="e.g. 5"
+          placeholder={`e.g. ${DEFAULT_LOW_STOCK_THRESHOLD}`}
+          aria-describedby="lowStockAt-help"
           className="h-9"
         />
+        <p id="lowStockAt-help" className="text-xs text-muted-foreground">
+          Leave blank to use {DEFAULT_LOW_STOCK_THRESHOLD}. Enter 0 to flag only
+          out-of-stock items.
+        </p>
       </div>
 
       <div className="space-y-2">
