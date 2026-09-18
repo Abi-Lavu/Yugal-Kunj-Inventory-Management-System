@@ -14,7 +14,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 
-// How each action is labelled and coloured in the table.
+
 const ACTION_STYLES: Record<
   string,
   { label: string; badge: string; icon: typeof Plus }
