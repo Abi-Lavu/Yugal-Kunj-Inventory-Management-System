@@ -29,6 +29,7 @@ import {
   CheckCircle2,
   ExternalLink,
   ImageOff,
+  Info,
   ListFilter,
   Pencil,
   Plus,
@@ -351,9 +352,16 @@ export default async function InventoryPage({
                     {/* details */}
                     <div className="space-y-3 p-4">
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-semibold leading-tight">
-                          {product.name}
-                        </h3>
+                        <div className="min-w-0">
+                          <h3 className="font-semibold leading-tight">
+                            {product.name}
+                          </h3>
+                          {product.brand && (
+                            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                              {product.brand}
+                            </p>
+                          )}
+                        </div>
                         <Badge
                           variant="outline"
                           className={cn("shrink-0", s.badge)}
@@ -375,6 +383,10 @@ export default async function InventoryPage({
                         <dd className="text-right font-medium">
                           {product.sku || <NotAvailable />}
                         </dd>
+                        <dt className="text-muted-foreground">Size</dt>
+                        <dd className="truncate text-right font-medium">
+                          {product.packageSize || <NotAvailable />}
+                        </dd>
                         <dt className="text-muted-foreground">Purchase</dt>
                         <dd className="truncate text-right font-medium">
                           {product.purchaseUrl ? (
@@ -391,6 +403,17 @@ export default async function InventoryPage({
                           )}
                         </dd>
                       </dl>
+                      {product.dietaryInfo && (
+                        <div className="flex items-start gap-1.5 rounded-md bg-amber-500/10 px-2 py-1.5 text-xs text-amber-700">
+                          <Info className="mt-px h-3.5 w-3.5 shrink-0" />
+                          <span>{product.dietaryInfo}</span>
+                        </div>
+                      )}
+                      {product.notes && (
+                        <p className="line-clamp-2 text-xs italic text-muted-foreground">
+                          {product.notes}
+                        </p>
+                      )}
                     </div>
                   </Card>
                 );

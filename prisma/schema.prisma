@@ -24,6 +24,11 @@ model Product {
   imageUrl String? 
   purchaseUrl String? 
 
+  brand String?
+  packageSize String?
+  dietaryInfo String?
+  notes String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

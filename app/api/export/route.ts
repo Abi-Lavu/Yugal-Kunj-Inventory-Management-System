@@ -26,6 +26,10 @@ export async function GET(request: Request) {
     select: {
       name: true,
       sku: true,
+      brand: true,
+      packageSize: true,
+      dietaryInfo: true,
+      notes: true,
       price: true,
       quantity: true,
       lowStockAt: true,
@@ -37,10 +41,14 @@ export async function GET(request: Request) {
   const header = [
     "Name",
     "SKU",
+    "Brand",
+    "Package Size",
     "Price",
     "Quantity",
     "Low Stock At",
     "Status",
+    "Dietary Info",
+    "Notes",
     "Purchase URL",
     "Created At",
   ];
@@ -50,10 +58,14 @@ export async function GET(request: Request) {
     return [
       p.name,
       p.sku ?? "",
+      p.brand ?? "",
+      p.packageSize ?? "",
       Number(p.price),
       p.quantity,
       p.lowStockAt ?? "",
       status,
+      p.dietaryInfo ?? "",
+      p.notes ?? "",
       p.purchaseUrl ?? "",
       p.createdAt.toISOString().slice(0, 10),
     ];

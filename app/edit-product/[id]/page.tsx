@@ -76,6 +76,10 @@ export default async function EditProductPage({
                   lowStockAt: product.lowStockAt,
                   imageUrl: product.imageUrl,
                   purchaseUrl: product.purchaseUrl,
+                  brand: product.brand,
+                  packageSize: product.packageSize,
+                  dietaryInfo: product.dietaryInfo,
+                  notes: product.notes,
                 }}
               />
             </CardContent>

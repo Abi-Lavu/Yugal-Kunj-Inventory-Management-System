@@ -5,6 +5,7 @@ export type SortKey =
   | "updated"
   | "name-asc"
   | "name-desc"
+  | "brand-asc"
   | "quantity-low"
   | "quantity-high"
   | "price-low"
@@ -18,6 +19,7 @@ export const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: "updated", label: "Recently updated" },
   { key: "name-asc", label: "Name: A–Z" },
   { key: "name-desc", label: "Name: Z–A" },
+  { key: "brand-asc", label: "Brand: A–Z" },
   { key: "quantity-low", label: "Quantity: lowest first" },
   { key: "quantity-high", label: "Quantity: highest first" },
   { key: "price-low", label: "Price: lowest first" },
@@ -39,6 +41,12 @@ export const SORT_ORDER_BY: Record<
   updated: [{ updatedAt: "desc" }, { id: "asc" }],
   "name-asc": [{ name: "asc" }, { id: "asc" }],
   "name-desc": [{ name: "desc" }, { id: "asc" }],
+  // Products with no brand sort to the bottom rather than the top.
+  "brand-asc": [
+    { brand: { sort: "asc", nulls: "last" } },
+    { name: "asc" },
+    { id: "asc" },
+  ],
   "quantity-low": [{ quantity: "asc" }, { id: "asc" }],
   "quantity-high": [{ quantity: "desc" }, { id: "asc" }],
   "price-low": [{ price: "asc" }, { id: "asc" }],

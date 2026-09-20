@@ -1,6 +1,7 @@
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { DEFAULT_LOW_STOCK_THRESHOLD } from "@/lib/stock-status";
 import { cn } from "@/lib/utils";
 import { AlertCircle, PackagePlus, Save } from "lucide-react";
@@ -29,6 +30,10 @@ export type ProductFormProduct = {
   lowStockAt: number | null;
   imageUrl: string | null;
   purchaseUrl: string | null;
+  brand: string | null;
+  packageSize: string | null;
+  dietaryInfo: string | null;
+  notes: string | null;
 };
 
 export default function ProductForm({
@@ -140,6 +145,29 @@ export default function ProductForm({
         />
       </div>
 
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="brand">Brand (optional)</Label>
+          <Input
+            id="brand"
+            name="brand"
+            defaultValue={product?.brand ?? ""}
+            placeholder="e.g. Royal"
+            className="h-9"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="packageSize">Package Size (optional)</Label>
+          <Input
+            id="packageSize"
+            name="packageSize"
+            defaultValue={product?.packageSize ?? ""}
+            placeholder="e.g. 20-pound bag"
+            className="h-9"
+          />
+        </div>
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="lowStockAt">Low Stock At (optional)</Label>
         <Input
@@ -172,6 +200,32 @@ export default function ProductForm({
         <p className="text-xs text-muted-foreground">
           Where this item is purchased.
         </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="dietaryInfo">Dietary Information (optional)</Label>
+        <Input
+          id="dietaryInfo"
+          name="dietaryInfo"
+          defaultValue={product?.dietaryInfo ?? ""}
+          placeholder="e.g. Contains peanuts"
+          aria-describedby="dietaryInfo-help"
+          className="h-9"
+        />
+        <p id="dietaryInfo-help" className="text-xs text-muted-foreground">
+          Allergens or dietary notes. Shown on the product card.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="notes">Notes (optional)</Label>
+        <Textarea
+          id="notes"
+          name="notes"
+          rows={3}
+          defaultValue={product?.notes ?? ""}
+          placeholder="e.g. Use for Sunday meals only"
+        />
       </div>
 
       <div className="flex gap-3 pt-2">

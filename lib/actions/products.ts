@@ -6,13 +6,35 @@ import { getCurrentUser } from "../auth";
 import { prisma } from "../prisma";
 import { z } from "zod";
 
+// Optional free text: trimmed, and an empty box is stored as null rather than "".
+const optionalText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .transform((value) => value || null)
+    .nullable()
+    .default(null);
+
 const ProductSchema = z.object({
   name: z.string().min(1, "Name is required"),
   price: z.coerce.number().nonnegative("Price must be non-negative"),
   quantity: z.coerce.number().int().min(0, "Quantity must be non-negative"),
   sku: z.string().optional(),
   lowStockAt: z.coerce.number().int().min(0).optional(),
+  brand: optionalText(120),
+  packageSize: optionalText(120),
+  dietaryInfo: optionalText(300),
+  notes: optionalText(1000),
 });
+
+// The optional detail fields, in the order they appear on the form.
+const DETAIL_FIELDS = [
+  ["brand", "Brand"],
+  ["packageSize", "Package size"],
+  ["dietaryInfo", "Dietary info"],
+  ["notes", "Notes"],
+] as const;
 
 export async function deleteProduct(formData: FormData) {
   const user = await getCurrentUser();
@@ -58,6 +80,10 @@ export async function createProduct(formData: FormData) {
     quantity: formData.get("quantity"),
     sku: formData.get("sku") || undefined,
     lowStockAt: formData.get("lowStockAt") || undefined,
+    brand: formData.get("brand") ?? undefined,
+    packageSize: formData.get("packageSize") ?? undefined,
+    dietaryInfo: formData.get("dietaryInfo") ?? undefined,
+    notes: formData.get("notes") ?? undefined,
   });
 
   if (!parsed.success) {
@@ -157,13 +183,18 @@ export async function updateProduct(formData: FormData) {
     quantity: formData.get("quantity"),
     sku: formData.get("sku") || undefined,
     lowStockAt: formData.get("lowStockAt") || undefined,
+    brand: formData.get("brand") ?? undefined,
+    packageSize: formData.get("packageSize") ?? undefined,
+    dietaryInfo: formData.get("dietaryInfo") ?? undefined,
+    notes: formData.get("notes") ?? undefined,
   });
 
   if (!parsed.success) {
     redirect(`/edit-product/${id}?error=invalid`);
   }
 
-  const { name, price, quantity, sku, lowStockAt } = parsed.data;
+  const { name, price, quantity, sku, lowStockAt, brand, packageSize, dietaryInfo, notes } =
+    parsed.data;
 
   const image = formData.get("image");
   let imageUrl: string | undefined;
@@ -210,6 +241,10 @@ export async function updateProduct(formData: FormData) {
         quantity,
         sku: sku ?? null,
         lowStockAt: lowStockAt ?? null,
+        brand,
+        packageSize,
+        dietaryInfo,
+        notes,
         purchaseUrl: purchaseUrl || null,
         ...(imageUrl ? { imageUrl } : {}),
       },
@@ -238,6 +273,13 @@ export async function updateProduct(formData: FormData) {
     changes.push(
       `Low stock at: ${before.lowStockAt ?? "—"} → ${lowStockAt ?? "—"}`
     );
+  }
+  for (const [field, label] of DETAIL_FIELDS) {
+    const previous = before[field] ?? "";
+    const next = parsed.data[field] ?? "";
+    if (previous !== next) {
+      changes.push(`${label}: ${previous || "—"} → ${next || "—"}`);
+    }
   }
   if ((before.purchaseUrl ?? "") !== (purchaseUrl || "")) {
     changes.push("Purchase link changed");

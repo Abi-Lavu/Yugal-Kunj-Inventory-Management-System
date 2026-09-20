@@ -52,6 +52,7 @@ export default async function DashboardPage() {
         select: {
           id: true,
           name: true,
+          brand: true,
           price: true,
           quantity: true,
           lowStockAt: true,
@@ -63,6 +64,7 @@ export default async function DashboardPage() {
         select: {
           id: true,
           name: true,
+          brand: true,
           quantity: true,
           lowStockAt: true,
           createdAt: true,
@@ -252,6 +254,11 @@ export default async function DashboardPage() {
                           <span className="truncate text-sm font-medium">
                             {product.name}
                           </span>
+                          {product.brand && (
+                            <span className="hidden shrink-0 text-xs text-muted-foreground sm:inline">
+                              {product.brand}
+                            </span>
+                          )}
                         </div>
                         <div className="flex shrink-0 items-center gap-2">
                           <span className="text-sm tabular-nums text-muted-foreground">
@@ -398,6 +405,11 @@ export default async function DashboardPage() {
                         <span className="truncate text-sm font-medium">
                           {product.name}
                         </span>
+                        {product.brand && (
+                          <span className="hidden shrink-0 text-xs text-muted-foreground sm:inline">
+                            {product.brand}
+                          </span>
+                        )}
                       </div>
                       <Badge
                         variant="outline"
