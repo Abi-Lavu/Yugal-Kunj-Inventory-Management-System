@@ -3,12 +3,19 @@ import ExportMenu from "@/components/export-menu";
 import InventorySearch from "@/components/inventory-search";
 import Pagination from "@/components/pagination";
 import Sidebar from "@/components/sidebar";
+import SortMenu from "@/components/sort-menu";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { deleteProduct } from "@/lib/actions/products";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  DEFAULT_SORT,
+  isSortKey,
+  SORT_ORDER_BY,
+  type SortKey,
+} from "@/lib/sort";
 import {
   DEFAULT_LOW_STOCK_THRESHOLD,
   getStockStatus,
@@ -62,6 +69,42 @@ function statusFilter(status: string): Prisma.ProductWhereInput | null {
   }
 }
 
+// "Stock status" ranks by getStockStatus, which compares each product against
+// its own threshold — not something Prisma can express as an orderBy. Rank the
+// matching ids here, then fetch only the rows this page shows.
+const STATUS_RANK: Record<ReturnType<typeof getStockStatus>, number> = {
+  out: 0,
+  low: 1,
+  in: 2,
+};
+
+async function findSortedByStatus(
+  where: Prisma.ProductWhereInput,
+  skip: number,
+  take: number
+) {
+  const ranked = await prisma.product.findMany({
+    where,
+    select: { id: true, quantity: true, lowStockAt: true, createdAt: true },
+  });
+
+  ranked.sort((a, b) => {
+    const byStatus =
+      STATUS_RANK[getStockStatus(a.quantity, a.lowStockAt)] -
+      STATUS_RANK[getStockStatus(b.quantity, b.lowStockAt)];
+    if (byStatus !== 0) return byStatus;
+    if (a.quantity !== b.quantity) return a.quantity - b.quantity;
+    return b.createdAt.getTime() - a.createdAt.getTime();
+  });
+
+  const ids = ranked.slice(skip, skip + take).map((p) => p.id);
+  const rows = await prisma.product.findMany({ where: { id: { in: ids } } });
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  return ids
+    .map((id) => byId.get(id))
+    .filter((row): row is NonNullable<typeof row> => row !== undefined);
+}
+
 const NotAvailable = () => (
   <span className="font-normal text-muted-foreground/50">Not Available</span>
 );
@@ -69,7 +112,12 @@ const NotAvailable = () => (
 export default async function InventoryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; page?: string; status?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    page?: string;
+    status?: string;
+    sort?: string;
+  }>;
 }) {
   await getCurrentUser();
 
@@ -78,6 +126,7 @@ export default async function InventoryPage({
   const status = STATUS_KEYS.includes(params.status as (typeof STATUS_KEYS)[number])
     ? (params.status as string)
     : "";
+  const sort: SortKey = isSortKey(params.sort) ? params.sort : DEFAULT_SORT;
   const page = Math.max(1, Number(params.page ?? 1));
   const pageSize = 9;
 
@@ -97,12 +146,14 @@ export default async function InventoryPage({
 
   const [totalCount, items] = await Promise.all([
     prisma.product.count({ where }),
-    prisma.product.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
+    sort === "status"
+      ? findSortedByStatus(where, (page - 1) * pageSize, pageSize)
+      : prisma.product.findMany({
+          where,
+          orderBy: SORT_ORDER_BY[sort],
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+        }),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -130,6 +181,7 @@ export default async function InventoryPage({
     const sp = new URLSearchParams();
     if (q) sp.set("q", q);
     if (key) sp.set("status", key);
+    if (sort !== DEFAULT_SORT) sp.set("sort", sort);
     const qs = sp.toString();
     return qs ? `/inventory?${qs}` : "/inventory";
   };
@@ -198,10 +250,13 @@ export default async function InventoryPage({
           {/* search + status filter */}
           <Card
             style={{ animationDelay: "80ms" }}
-            className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
+            className="mb-6 animate-in fade-in slide-in-from-bottom-4 overflow-visible duration-500"
           >
             <CardContent className="space-y-4">
-              <InventorySearch initialQuery={q} />
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <InventorySearch initialQuery={q} />
+                <SortMenu sort={sort} />
+              </div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                   <ListFilter className="h-3.5 w-3.5" />
@@ -355,6 +410,7 @@ export default async function InventoryPage({
                 searchParams={{
                   q,
                   ...(status ? { status } : {}),
+                  ...(sort !== DEFAULT_SORT ? { sort } : {}),
                   pageSize: String(pageSize),
                 }}
               />

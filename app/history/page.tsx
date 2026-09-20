@@ -1,6 +1,6 @@
+import AuditActionBadge from "@/components/audit-action-badge";
 import Pagination from "@/components/pagination";
 import Sidebar from "@/components/sidebar";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
   Table,
@@ -12,29 +12,6 @@ import {
 } from "@/components/ui/table";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Pencil, Plus, Trash2 } from "lucide-react";
-
-
-const ACTION_STYLES: Record<
-  string,
-  { label: string; badge: string; icon: typeof Plus }
-> = {
-  CREATE: {
-    label: "Created",
-    badge: "border-transparent bg-emerald-500/10 text-emerald-600",
-    icon: Plus,
-  },
-  UPDATE: {
-    label: "Updated",
-    badge: "border-transparent bg-violet-500/10 text-violet-600",
-    icon: Pencil,
-  },
-  DELETE: {
-    label: "Deleted",
-    badge: "border-transparent bg-rose-500/10 text-rose-600",
-    icon: Trash2,
-  },
-};
 
 export default async function HistoryPage({
   searchParams,
@@ -96,50 +73,42 @@ export default async function HistoryPage({
                     </TableCell>
                   </TableRow>
                 )}
-                {logs.map((log, i) => {
-                  const style =
-                    ACTION_STYLES[log.action] ?? ACTION_STYLES.UPDATE;
-                  const ActionIcon = style.icon;
-                  return (
-                    <TableRow
-                      key={log.id}
-                      style={{ animationDelay: `${100 + i * 40}ms` }}
-                      className="animate-in fade-in slide-in-from-bottom-1 duration-500"
-                    >
-                      <TableCell className="py-3 pl-6">
-                        <div className="font-medium text-foreground">
-                          {log.userName}
+                {logs.map((log, i) => (
+                  <TableRow
+                    key={log.id}
+                    style={{ animationDelay: `${100 + i * 40}ms` }}
+                    className="animate-in fade-in slide-in-from-bottom-1 duration-500"
+                  >
+                    <TableCell className="py-3 pl-6">
+                      <div className="font-medium text-foreground">
+                        {log.userName}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {log.userEmail}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <AuditActionBadge action={log.action} />
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <div className="font-medium">{log.productName}</div>
+                      {log.details && (
+                        <div className="mt-0.5 text-xs text-muted-foreground">
+                          {log.details}
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {log.userEmail}
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-3">
-                        <Badge variant="outline" className={style.badge}>
-                          <ActionIcon />
-                          {style.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="py-3">
-                        <div className="font-medium">{log.productName}</div>
-                        {log.details && (
-                          <div className="mt-0.5 text-xs text-muted-foreground">
-                            {log.details}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="py-3 pr-6 text-right text-muted-foreground">
-                        {log.createdAt.toLocaleString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                        })}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                      )}
+                    </TableCell>
+                    <TableCell className="py-3 pr-6 text-right text-muted-foreground">
+                      {log.createdAt.toLocaleString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </Card>
