@@ -2,6 +2,7 @@ import DeleteProductDialog from "@/components/delete-product-dialog";
 import ExportMenu from "@/components/export-menu";
 import InventorySearch from "@/components/inventory-search";
 import Pagination from "@/components/pagination";
+import { parsePage } from "@/lib/pagination";
 import Sidebar from "@/components/sidebar";
 import SortMenu from "@/components/sort-menu";
 import { Badge } from "@/components/ui/badge";
@@ -95,7 +96,7 @@ async function findSortedByStatus(
       STATUS_RANK[getStockStatus(b.quantity, b.lowStockAt)];
     if (byStatus !== 0) return byStatus;
     if (a.quantity !== b.quantity) return a.quantity - b.quantity;
-    return b.createdAt.getTime() - a.createdAt.getTime();
+    return b.createdAt.getTime() - a.createdAt.getTime() || a.id.localeCompare(b.id);
   });
 
   const ids = ranked.slice(skip, skip + take).map((p) => p.id);
@@ -128,7 +129,6 @@ export default async function InventoryPage({
     ? (params.status as string)
     : "";
   const sort: SortKey = isSortKey(params.sort) ? params.sort : DEFAULT_SORT;
-  const page = Math.max(1, Number(params.page ?? 1));
   const pageSize = 9;
 
   const conditions = [
@@ -145,19 +145,18 @@ export default async function InventoryPage({
   const where: Prisma.ProductWhereInput =
     conditions.length > 0 ? { AND: conditions } : {};
 
-  const [totalCount, items] = await Promise.all([
-    prisma.product.count({ where }),
+  const totalCount = await prisma.product.count({ where });
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const page = parsePage(params.page, totalPages);
+  const items =
     sort === "status"
-      ? findSortedByStatus(where, (page - 1) * pageSize, pageSize)
-      : prisma.product.findMany({
+      ? await findSortedByStatus(where, (page - 1) * pageSize, pageSize)
+      : await prisma.product.findMany({
           where,
           orderBy: SORT_ORDER_BY[sort],
           skip: (page - 1) * pageSize,
           take: pageSize,
-        }),
-  ]);
-
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+        });
 
   const statusStyles = {
     out: {
@@ -434,7 +433,6 @@ export default async function InventoryPage({
                   q,
                   ...(status ? { status } : {}),
                   ...(sort !== DEFAULT_SORT ? { sort } : {}),
-                  pageSize: String(pageSize),
                 }}
               />
             </div>

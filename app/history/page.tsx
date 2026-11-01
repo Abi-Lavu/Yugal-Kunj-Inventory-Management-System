@@ -1,5 +1,6 @@
 import AuditActionBadge from "@/components/audit-action-badge";
 import Pagination from "@/components/pagination";
+import { parsePage } from "@/lib/pagination";
 import Sidebar from "@/components/sidebar";
 import { Card } from "@/components/ui/card";
 import {
@@ -21,19 +22,16 @@ export default async function HistoryPage({
   await getCurrentUser();
 
   const params = await searchParams;
-  const page = Math.max(1, Number(params.page ?? 1));
   const pageSize = 15;
 
-  const [totalCount, logs] = await Promise.all([
-    prisma.auditLog.count(),
-    prisma.auditLog.findMany({
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
-  ]);
-
+  const totalCount = await prisma.auditLog.count();
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const page = parsePage(params.page, totalPages);
+  const logs = await prisma.auditLog.findMany({
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    skip: (page - 1) * pageSize,
+    take: pageSize,
+  });
 
   return (
     <div className="min-h-screen bg-muted/20">

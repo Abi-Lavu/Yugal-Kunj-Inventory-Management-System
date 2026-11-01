@@ -45,9 +45,8 @@ const statusStyles = {
 export default async function DashboardPage() {
   const user = await getCurrentUser();
 
-  const [totalProducts, allProducts, recentProducts, recentChanges] =
+  const [allProducts, recentProducts, recentChanges] =
     await Promise.all([
-      prisma.product.count(),
       prisma.product.findMany({
         select: {
           id: true,
@@ -72,6 +71,8 @@ export default async function DashboardPage() {
       }),
       prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 6 }),
     ]);
+
+  const totalProducts = allProducts.length;
 
   const totalValue = allProducts.reduce(
     (sum, product) => sum + Number(product.price) * Number(product.quantity),

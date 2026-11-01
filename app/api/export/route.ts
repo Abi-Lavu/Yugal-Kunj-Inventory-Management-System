@@ -1,15 +1,11 @@
 import { auth } from "@/lib/auth";
+import { csvCell } from "@/lib/csv";
 import { prisma } from "@/lib/prisma";
 import { getStockStatus, STOCK_STATUS_LABELS } from "@/lib/stock-status";
 import { buildXlsx } from "@/lib/xlsx";
 import { headers } from "next/headers";
 
 type Cell = string | number | null;
-
-function csvCell(value: Cell): string {
-  const s = value === null || value === undefined ? "" : String(value);
-  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-}
 
 export async function GET(request: Request) {
   const session = await auth.api.getSession({ headers: await headers() });

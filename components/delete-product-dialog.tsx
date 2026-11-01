@@ -26,13 +26,19 @@ export default function DeleteProductDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState("");
 
   function handleConfirm() {
     const formData = new FormData();
     formData.set("id", id);
+    setError("");
     startTransition(async () => {
-      await action(formData);
-      setOpen(false);
+      try {
+        await action(formData);
+        setOpen(false);
+      } catch {
+        setError("Could not delete the product. Please try again.");
+      }
     });
   }
 
@@ -61,6 +67,7 @@ export default function DeleteProductDialog({
             action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
+        {error && <p role="alert" className="text-sm text-rose-600">{error}</p>}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Go Back</AlertDialogCancel>
           <AlertDialogAction

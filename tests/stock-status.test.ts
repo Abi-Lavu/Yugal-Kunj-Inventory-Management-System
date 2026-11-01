@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { getStockStatus, type StockStatus } from "../lib/stock-status";
+import { getStockStatus, type StockStatus } from "../lib/stock-status.ts";
 
 const cases: [number, number | null | undefined, StockStatus][] = [
   [0, 0, "out"],

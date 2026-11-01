@@ -24,28 +24,32 @@ export default function AuthForm() {
     setError("");
     setIsSubmitting(true);
 
-    const response = isSignIn
-      ? await authClient.signIn.email({
-          email,
-          password,
-          callbackURL: "/dashboard",
-        })
-      : await authClient.signUp.email({
-          name,
-          email,
-          password,
-          callbackURL: "/dashboard",
-        });
+    try {
+      const response = isSignIn
+        ? await authClient.signIn.email({
+            email,
+            password,
+            callbackURL: "/dashboard",
+          })
+        : await authClient.signUp.email({
+            name,
+            email,
+            password,
+            callbackURL: "/dashboard",
+          });
 
-    setIsSubmitting(false);
+      if (response.error) {
+        setError(response.error.message ?? "Authentication failed.");
+        return;
+      }
 
-    if (response.error) {
-      setError(response.error.message ?? "Authentication failed.");
-      return;
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError("Could not connect. Please check your connection and try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    router.push("/dashboard");
-    router.refresh();
   }
 
   return (
