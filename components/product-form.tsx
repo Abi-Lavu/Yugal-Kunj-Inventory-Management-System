@@ -1,5 +1,6 @@
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import EditNumberInput from "@/components/edit-number-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DEFAULT_LOW_STOCK_THRESHOLD } from "@/lib/stock-status";
@@ -107,30 +108,55 @@ export default function ProductForm({
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="quantity">Quantity *</Label>
-          <Input
-            id="quantity"
-            name="quantity"
-            type="number"
-            min="0"
-            required
-            defaultValue={product?.quantity}
-            placeholder="0"
-            className="h-9"
-          />
+          {isEdit ? (
+            <EditNumberInput
+              id="quantity"
+              name="quantity"
+              min="0"
+              required
+              defaultValue={product?.quantity}
+              placeholder="0"
+              className="h-9"
+            />
+          ) : (
+            <Input
+              id="quantity"
+              name="quantity"
+              type="number"
+              min="0"
+              required
+              defaultValue={product?.quantity}
+              placeholder="0"
+              className="h-9"
+            />
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="price">Price *</Label>
-          <Input
-            id="price"
-            name="price"
-            type="number"
-            step="0.01"
-            min="0"
-            required
-            defaultValue={product?.price}
-            placeholder="0.00"
-            className="h-9"
-          />
+          {isEdit ? (
+            <EditNumberInput
+              id="price"
+              name="price"
+              step="0.01"
+              min="0"
+              required
+              defaultValue={product?.price}
+              placeholder="0.00"
+              className="h-9"
+            />
+          ) : (
+            <Input
+              id="price"
+              name="price"
+              type="number"
+              step="0.01"
+              min="0"
+              required
+              defaultValue={product?.price}
+              placeholder="0.00"
+              className="h-9"
+            />
+          )}
         </div>
       </div>
 
@@ -170,16 +196,28 @@ export default function ProductForm({
 
       <div className="space-y-2">
         <Label htmlFor="lowStockAt">Low Stock At (optional)</Label>
-        <Input
-          id="lowStockAt"
-          name="lowStockAt"
-          type="number"
-          min="0"
-          defaultValue={product?.lowStockAt ?? ""}
-          placeholder={`e.g. ${DEFAULT_LOW_STOCK_THRESHOLD}`}
-          aria-describedby="lowStockAt-help"
-          className="h-9"
-        />
+        {isEdit ? (
+          <EditNumberInput
+            id="lowStockAt"
+            name="lowStockAt"
+            min="0"
+            defaultValue={product?.lowStockAt ?? ""}
+            placeholder={`e.g. ${DEFAULT_LOW_STOCK_THRESHOLD}`}
+            aria-describedby="lowStockAt-help"
+            className="h-9"
+          />
+        ) : (
+          <Input
+            id="lowStockAt"
+            name="lowStockAt"
+            type="number"
+            min="0"
+            defaultValue={product?.lowStockAt ?? ""}
+            placeholder={`e.g. ${DEFAULT_LOW_STOCK_THRESHOLD}`}
+            aria-describedby="lowStockAt-help"
+            className="h-9"
+          />
+        )}
         <p id="lowStockAt-help" className="text-xs text-muted-foreground">
           Leave blank to use {DEFAULT_LOW_STOCK_THRESHOLD}. Enter 0 to flag only
           out-of-stock items.
