@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { Prisma } from "@prisma/client";
 import { getCurrentUser } from "../auth";
 import { prisma } from "../prisma";
+import { validateProductImage } from "../product-image";
 import { parseProductForm } from "../product-validation";
 
 // The optional detail fields, in the order they appear on the form.
@@ -66,12 +68,8 @@ export async function createProduct(formData: FormData) {
   if (!(image instanceof File) || image.size === 0) {
     redirect("/add-product?error=image-required");
   }
-  if (!image.type.startsWith("image/")) {
-    redirect("/add-product?error=image-invalid");
-  }
-  if (image.size > 6 * 1024 * 1024) {
-    redirect("/add-product?error=image-too-large");
-  }
+  const imageError = await validateProductImage(image);
+  if (imageError) redirect(`/add-product?error=${imageError}`);
   const imageUrl = `data:${image.type};base64,${Buffer.from(
     await image.arrayBuffer()
   ).toString("base64")}`;
@@ -122,7 +120,10 @@ export async function createProduct(formData: FormData) {
         },
       });
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      redirect("/add-product?error=duplicate-sku");
+    }
     redirect("/add-product?error=failed");
   }
 
@@ -160,12 +161,8 @@ export async function updateProduct(formData: FormData) {
   const image = formData.get("image");
   let imageUrl: string | undefined;
   if (image instanceof File && image.size > 0) {
-    if (!image.type.startsWith("image/")) {
-      redirect(`/edit-product/${id}?error=image-invalid`);
-    }
-    if (image.size > 6 * 1024 * 1024) {
-      redirect(`/edit-product/${id}?error=image-too-large`);
-    }
+    const imageError = await validateProductImage(image);
+    if (imageError) redirect(`/edit-product/${id}?error=${imageError}`);
     imageUrl = `data:${image.type};base64,${Buffer.from(
       await image.arrayBuffer()
     ).toString("base64")}`;
@@ -260,7 +257,10 @@ export async function updateProduct(formData: FormData) {
         },
       });
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      redirect(`/edit-product/${id}?error=duplicate-sku`);
+    }
     redirect(`/edit-product/${id}?error=failed`);
   }
 

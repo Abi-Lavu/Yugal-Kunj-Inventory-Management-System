@@ -94,7 +94,7 @@ export default function ProductForm({
           id="image"
           name="image"
           type="file"
-          accept="image/*"
+          accept="image/png,image/jpeg"
           required={!isEdit}
           className="h-auto cursor-pointer py-1.5 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1 file:text-foreground"
         />
