@@ -47,7 +47,7 @@ export default async function EditProductPage({
               Edit Product
             </h1>
             <p className="text-sm text-muted-foreground">
-              Update the details for “{product.name}”.
+              “{product.name}”
             </p>
           </div>
 
@@ -60,7 +60,7 @@ export default async function EditProductPage({
                 <SquarePen className="h-4 w-4 text-violet-600" />
                 Product details
               </CardTitle>
-              <CardDescription>Change any field, then save.</CardDescription>
+              <CardDescription>Fields marked * are required.</CardDescription>
             </CardHeader>
             <CardContent>
               <ProductForm

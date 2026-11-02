@@ -157,10 +157,10 @@ export default async function DashboardPage() {
           <div className="mb-8 flex animate-in fade-in slide-in-from-bottom-3 flex-wrap items-end justify-between gap-4 duration-500">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">
-                Yugal Kunj Inventory Management System
+                Dashboard
               </h1>
               <p className="text-sm text-muted-foreground">
-                Welcome back, {firstName}. Here is an overview of your inventory.
+                Yugal Kunj · {firstName}
               </p>
             </div>
             <Link
@@ -216,7 +216,7 @@ export default async function DashboardPage() {
                 <div className="grid gap-1">
                   <CardTitle>Needs Attention</CardTitle>
                   <CardDescription>
-                    Out of stock and running low, emptiest first
+                    Low and out of stock
                   </CardDescription>
                 </div>
                 <Link
@@ -233,7 +233,7 @@ export default async function DashboardPage() {
                 {needsAttention.length === 0 ? (
                   <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground">
                     <CheckCircle2 className="h-6 w-6 text-emerald-600" />
-                    Everything is in stock — nothing needs restocking.
+                    No low-stock or out-of-stock products.
                   </div>
                 ) : (
                   needsAttention.map((product, i) => {
@@ -365,7 +365,7 @@ export default async function DashboardPage() {
                 <div className="grid gap-1">
                   <CardTitle>Recently Added</CardTitle>
                   <CardDescription>
-                    Latest additions to inventory
+                    Newest products
                   </CardDescription>
                 </div>
                 <Link
@@ -381,7 +381,7 @@ export default async function DashboardPage() {
               <CardContent className="space-y-2">
                 {recentProducts.length === 0 && (
                   <div className="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground">
-                    No products yet — add your first one to get started.
+                    No products added yet.
                   </div>
                 )}
                 {recentProducts.map((product, i) => {
@@ -431,7 +431,7 @@ export default async function DashboardPage() {
               <CardHeader className="flex-row items-center justify-between">
                 <div className="grid gap-1">
                   <CardTitle>Recent Changes</CardTitle>
-                  <CardDescription>Who changed what, most recent first</CardDescription>
+                  <CardDescription>Latest activity</CardDescription>
                 </div>
                 <Link
                   href="/history"

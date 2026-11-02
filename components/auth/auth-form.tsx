@@ -59,9 +59,7 @@ export default function AuthForm() {
           {isSignIn ? "Sign In" : "Create Account"}
         </h1>
         <p className="text-sm text-gray-500 mt-2">
-          {isSignIn
-            ? "Access your inventory dashboard."
-            : "Start managing your inventory."}
+          Yugal Kunj inventory
         </p>
       </div>
 

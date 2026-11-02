@@ -37,7 +37,7 @@ export default async function AddProductPage({
               Add Product
             </h1>
             <p className="text-sm text-muted-foreground">
-              Add a new product to your inventory.
+              New inventory item
             </p>
           </div>
 

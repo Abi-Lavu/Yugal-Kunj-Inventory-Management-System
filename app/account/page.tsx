@@ -32,7 +32,7 @@ export default async function AccountPage() {
           <div className="mb-8 animate-in fade-in slide-in-from-bottom-3 duration-500">
             <h1 className="text-2xl font-semibold tracking-tight">Account</h1>
             <p className="text-sm text-muted-foreground">
-              View your profile information.
+              Profile information
             </p>
           </div>
 
@@ -42,7 +42,7 @@ export default async function AccountPage() {
           >
             <CardHeader>
               <CardTitle>Account</CardTitle>
-              <CardDescription>Your account details.</CardDescription>
+              <CardDescription>Name and email</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center gap-4">

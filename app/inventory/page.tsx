@@ -229,7 +229,7 @@ export default async function InventoryPage({
                 Inventory
               </h1>
               <p className="text-sm text-muted-foreground">
-                Manage your products and track stock levels.
+                Shared product catalog
               </p>
             </div>
             <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-end">

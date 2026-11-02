@@ -42,7 +42,7 @@ export default async function HistoryPage({
           <div className="mb-8 animate-in fade-in slide-in-from-bottom-3 duration-500">
             <h1 className="text-2xl font-semibold tracking-tight">History</h1>
             <p className="text-sm text-muted-foreground">
-              Every change made to the inventory, and who made it.
+              Product activity
             </p>
           </div>
 
@@ -66,8 +66,7 @@ export default async function HistoryPage({
                       colSpan={4}
                       className="py-14 text-center text-muted-foreground"
                     >
-                      No changes recorded yet — add, edit, or delete a product
-                      and it will show up here.
+                      No changes recorded yet.
                     </TableCell>
                   </TableRow>
                 )}

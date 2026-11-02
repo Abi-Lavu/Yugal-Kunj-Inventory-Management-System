@@ -12,8 +12,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   "duplicate-name": "A product with this name already exists.",
   "duplicate-sku": "A product with this SKU already exists.",
   "image-required": "Please attach an image of the product.",
-  "image-invalid": "The attached file must be an image.",
-  "image-too-large": "That image is too large — please use one under 6 MB.",
+  "image-invalid": "Use a valid PNG or JPEG image.",
+  "image-too-large": "Use an image no larger than 6 MB.",
   invalid: "Please check the form and try again.",
   failed: "Something went wrong. Please try again.",
 };
@@ -86,7 +86,7 @@ export default function ProductForm({
               className="h-16 w-16 rounded-md border object-cover"
             />
             <span className="text-xs text-muted-foreground">
-              Current image — upload a new one to replace it.
+              Current image
             </span>
           </div>
         )}
@@ -100,8 +100,8 @@ export default function ProductForm({
         />
         <p className="text-xs text-muted-foreground">
           {isEdit
-            ? "Optional — leave empty to keep the current image (PNG/JPG, up to 6 MB)."
-            : "Attach a photo of the item (PNG or JPG, up to 6 MB)."}
+            ? "Leave blank to keep the current image. PNG/JPG, up to 6 MB."
+            : "PNG/JPG, up to 6 MB."}
         </p>
       </div>
 
@@ -236,7 +236,7 @@ export default function ProductForm({
           className="h-9"
         />
         <p className="text-xs text-muted-foreground">
-          Where this item is purchased.
+          Store or supplier URL
         </p>
       </div>
 
